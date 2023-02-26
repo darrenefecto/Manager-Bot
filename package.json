@@ -1,0 +1,17 @@
+{
+  "name": "manager-bot",
+  "version": "1.0.0",
+  "description": "I'm helping my servers",
+  "main": "index.js",
+  "scripts": {
+    "test": "node."
+  },
+  "author": "darrenefecto#4662",
+  "license": "GPL-3.0 license",
+  "dependencies": {
+    "@discordjs/opus": "^0.8.0",
+    "discord.js": "^12.5.3",
+    "ffmpeg-static": "^5.1.0",
+    "ytdl-core": "^4.11.2"
+  }
+}
