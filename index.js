@@ -50,47 +50,56 @@ client.on("message", message => {
         // ---------------- HELP COMMAND ----------------------
         if (command === "help")
         {
-            const embed = new Discord.MessageEmbed()
-                .setColor(getRandomColor())
-                .setTitle('**All Commands:**')
-                .addField(` `, ' ', false)
-                .addField(` `, '**General:**', false)
-                .addField(`${prefix}clear`, 'Deletes a set of messages', true)
-                .addField(`${prefix}kick`, 'Kicks members', true)
-                .addField(`${prefix}ban`, 'Bans members', true)
-                .addField(`${prefix}role` , 'Distributes roles', true)
-                .addField(`${prefix}userinfo`, 'Shows member information', true)
-                .addField(` `, ' ', false)
-                .addField(` `, '**Fun:**', false)
-                .addField(`${prefix}meme`, 'Displays a random meme', true)
-                .addField(`${prefix}animeme`, 'Displays a random meme', true)
-                .addField(` `, ' ', false)
-                .addField(` `, '**Music:**', false)
-                .addField(`${prefix}play`, 'Plays YouTube audio in a voice channel', true)
-                .addField(`${prefix}stop`, 'Stops YouTube audio in a voice channel', true)
-                .addField(`${prefix}skip`, 'Skips YouTube audio in a voice channel', true)
-                .addField(` `, ' ', false)
-                .addField(` `, '**NSFW:**', false)
-                .addField(`${prefix}nsfw`, 'Sets channel to nsfw mode', false)
-                if (message.channel.nsfw)
-                {
-                    embed.addField(` `, ' ', false)
-                    embed.addField(` `, '**3D:**', false)
-                    embed.addField(`${prefix}boobs`, 'Sends a random boobs', true)
-                    embed.addField(`${prefix}cumsluts`, 'Sends random cumsluts', true)
-                    embed.addField(`${prefix}ass`, 'Sends a random pic of ass', true)
-                    embed.addField(`${prefix}cosplay`, 'Sends a random pic of cosplay', true)
-                    embed.addField(`${prefix}blowjob`, 'Sends random blowjob', true)
-                    embed.addField(`${prefix}tights`, 'Sends random tights', true)
-                    
-                    embed.addField(` `, ' ', false)
-                    embed.addField(` `, '**2D:**', false)
-                    embed.addField(`${prefix}hentai`, 'Sends a random hentai', true)
-                    embed.addField(`${prefix}hboobs`, 'Sends random hentai boobs', true)
-                }
-                embed.setFooter('This Bot belongs to: darrenefecto#4662')
+            const embed1 = new Discord.MessageEmbed()
+            .setColor(getRandomColor())
+            .setTitle('**All General Commands:**')
+            .addField(` `, ' ', false)
+            .addField(` `, '**General:**', false)
+            .addField(`${prefix}clear`, 'Deletes a set of messages', true)
+            .addField(`${prefix}kick`, 'Kicks members', true)
+            .addField(`${prefix}ban`, 'Bans members', true)
+            .addField(`${prefix}role` , 'Distributes roles', true)
+            .addField(`${prefix}userinfo`, 'Shows member information', true)
+            .addField(` `, ' ', false)
+            .addField(` `, '**Fun:**', false)
+            .addField(`${prefix}meme`, 'Displays a random meme', true)
+            .addField(`${prefix}animeme`, 'Displays a random meme', true)
+            .addField(` `, ' ', false)
+            .addField(` `, '**Music:**', false)
+            .addField(`${prefix}play`, 'Plays YouTube audio in a voice channel', true)
+            .addField(`${prefix}stop`, 'Stops YouTube audio in a voice channel', true)
+            .addField(`${prefix}skip`, 'Skips YouTube audio in a voice channel', true)
+            .addField(` `, ' ', false)
+            .addField(` `, '**NSFW:**', false)
+            .addField(`${prefix}nsfw`, 'Sets channel to nsfw mode', false)
 
-            message.channel.send(embed);
+            const embed2 = new Discord.MessageEmbed()
+            .setColor(getRandomColor())
+            .setTitle('**All NSFW Commands:**')
+
+            if (message.channel.nsfw) {
+                embed2.addField(` `, ' ', false)
+                .addField(` `, '**3D:**', false)
+                .addField(`${prefix}boobs`, 'Sends a random boobs', true)
+                .addField(`${prefix}cumsluts`, 'Sends random cumsluts', true)
+                .addField(`${prefix}ass`, 'Sends a random pic of ass', true)
+                .addField(`${prefix}cosplay`, 'Sends a random pic of cosplay', true)
+                .addField(`${prefix}blowjob`, 'Sends random blowjob', true)
+                .addField(`${prefix}tights`, 'Sends random tights', true)
+                .addField(` `, ' ', false)
+                .addField(` `, '**2D:**', false)
+                .addField(`${prefix}hentai`, 'Sends a random hentai', true)
+                .addField(`${prefix}hboobs`, 'Sends random hentai boobs', true);
+            }
+
+            embed1.setFooter('This Bot belongs to: darrenefecto#4662');
+            embed2.setFooter('This Bot belongs to: darrenefecto#4662');
+
+            message.channel.send(embed1);
+            if (message.channel.nsfw) {
+                message.channel.send(embed2);
+            }
+
         }
         // ---------------- CLEAR COMMAND ----------------------
         else if (command === "clear") {
@@ -115,8 +124,6 @@ client.on("message", message => {
                                 console.error(error);
                                 message.reply('Error occurred while deleting old messages.');
                             });
-                    } else {
-                        message.reply('Remember: ``Messages must be under 14 days old.``');
                     }
                 })
                 .catch(error => {
@@ -417,17 +424,18 @@ client.on('message', async message => {
         }
 
         axios.get('https://www.reddit.com/r/boobies/hot.json')
-          .then(response => {
+        .then(response => {
             const posts = response.data.data.children;
-            const randomPost = posts[Math.floor(Math.random() * posts.length)];
-            const imageUrl = randomPost.data.url;
-      
+            const imagePosts = posts.filter(post => /\.(jpg|jpeg|png|gif|gifv)$/i.test(post.data.url));
+            const randomPost = imagePosts[Math.floor(Math.random() * imagePosts.length)];
+            const imageUrl = randomPost.data.url.replace(/\.gifv/g, '.gif');
+    
             message.channel.send({ files: [imageUrl] });
-          })
-          .catch(error => {
+        })
+        .catch(error => {
             console.log(error);
             message.channel.send('There was an error getting the image :(');
-          });
+        });
     }
 
     // Category Cumsluts
@@ -437,17 +445,18 @@ client.on('message', async message => {
         }
 
         axios.get('https://www.reddit.com/r/cumsluts/hot.json')
-          .then(response => {
+        .then(response => {
             const posts = response.data.data.children;
-            const randomPost = posts[Math.floor(Math.random() * posts.length)];
-            const imageUrl = randomPost.data.url;
-      
+            const imagePosts = posts.filter(post => /\.(jpg|jpeg|png|gif|gifv)$/i.test(post.data.url));
+            const randomPost = imagePosts[Math.floor(Math.random() * imagePosts.length)];
+            const imageUrl = randomPost.data.url.replace(/\.gifv/g, '.gif');
+    
             message.channel.send({ files: [imageUrl] });
-          })
-          .catch(error => {
+        })
+        .catch(error => {
             console.log(error);
             message.channel.send('There was an error getting the image :(');
-          });
+        });
     }
 
     // Category Cosplay
@@ -457,17 +466,18 @@ client.on('message', async message => {
         }
 
         axios.get('https://www.reddit.com/r/cosplaygirls/hot.json')
-          .then(response => {
+        .then(response => {
             const posts = response.data.data.children;
-            const randomPost = posts[Math.floor(Math.random() * posts.length)];
-            const imageUrl = randomPost.data.url;
-      
+            const imagePosts = posts.filter(post => /\.(jpg|jpeg|png|gif|gifv)$/i.test(post.data.url));
+            const randomPost = imagePosts[Math.floor(Math.random() * imagePosts.length)];
+            const imageUrl = randomPost.data.url.replace(/\.gifv/g, '.gif');
+    
             message.channel.send({ files: [imageUrl] });
-          })
-          .catch(error => {
+        })
+        .catch(error => {
             console.log(error);
             message.channel.send('There was an error getting the image :(');
-          });
+        });
     }
 
     // Category Ass
@@ -477,17 +487,18 @@ client.on('message', async message => {
         }
 
         axios.get('https://www.reddit.com/r/ass/hot.json')
-          .then(response => {
+        .then(response => {
             const posts = response.data.data.children;
-            const randomPost = posts[Math.floor(Math.random() * posts.length)];
-            const imageUrl = randomPost.data.url;
-      
+            const imagePosts = posts.filter(post => /\.(jpg|jpeg|png|gif|gifv)$/i.test(post.data.url));
+            const randomPost = imagePosts[Math.floor(Math.random() * imagePosts.length)];
+            const imageUrl = randomPost.data.url.replace(/\.gifv/g, '.gif');
+    
             message.channel.send({ files: [imageUrl] });
-          })
-          .catch(error => {
+        })
+        .catch(error => {
             console.log(error);
             message.channel.send('There was an error getting the image :(');
-          });
+        });
     }
 
     // Category Blowjob
@@ -497,17 +508,18 @@ client.on('message', async message => {
         }
 
         axios.get('https://www.reddit.com/r/blowjob/hot.json')
-          .then(response => {
+        .then(response => {
             const posts = response.data.data.children;
-            const randomPost = posts[Math.floor(Math.random() * posts.length)];
-            const imageUrl = randomPost.data.url;
-      
+            const imagePosts = posts.filter(post => /\.(jpg|jpeg|png|gif|gifv)$/i.test(post.data.url));
+            const randomPost = imagePosts[Math.floor(Math.random() * imagePosts.length)];
+            const imageUrl = randomPost.data.url.replace(/\.gifv/g, '.gif');
+    
             message.channel.send({ files: [imageUrl] });
-          })
-          .catch(error => {
+        })
+        .catch(error => {
             console.log(error);
             message.channel.send('There was an error getting the image :(');
-          });
+        });
     }
 
     // Category Thigths
@@ -517,17 +529,18 @@ client.on('message', async message => {
         }
 
         axios.get('https://www.reddit.com/r/tights/hot.json')
-          .then(response => {
+        .then(response => {
             const posts = response.data.data.children;
-            const randomPost = posts[Math.floor(Math.random() * posts.length)];
-            const imageUrl = randomPost.data.url;
-      
+            const imagePosts = posts.filter(post => /\.(jpg|jpeg|png|gif|gifv)$/i.test(post.data.url));
+            const randomPost = imagePosts[Math.floor(Math.random() * imagePosts.length)];
+            const imageUrl = randomPost.data.url.replace(/\.gifv/g, '.gif');
+    
             message.channel.send({ files: [imageUrl] });
-          })
-          .catch(error => {
+        })
+        .catch(error => {
             console.log(error);
             message.channel.send('There was an error getting the image :(');
-          });
+        });
     }
 
     // Category Hanime
@@ -536,17 +549,18 @@ client.on('message', async message => {
             return message.reply('This command can only be used in a NSFW channel.');
         }
         axios.get('https://www.reddit.com/r/hentai/hot.json')
-          .then(response => {
+        .then(response => {
             const posts = response.data.data.children;
-            const randomPost = posts[Math.floor(Math.random() * posts.length)];
-            const imageUrl = randomPost.data.url;
-      
+            const imagePosts = posts.filter(post => /\.(jpg|jpeg|png|gif|gifv)$/i.test(post.data.url));
+            const randomPost = imagePosts[Math.floor(Math.random() * imagePosts.length)];
+            const imageUrl = randomPost.data.url.replace(/\.gifv/g, '.gif');
+    
             message.channel.send({ files: [imageUrl] });
-          })
-          .catch(error => {
+        })
+        .catch(error => {
             console.log(error);
             message.channel.send('There was an error getting the image :(');
-          });
+        });
     }
 
     // Category hboobs
@@ -555,17 +569,18 @@ client.on('message', async message => {
             return message.reply('This command can only be used in a NSFW channel.');
         }
         axios.get('https://www.reddit.com/r/AnimeBust/hot.json')
-          .then(response => {
+        .then(response => {
             const posts = response.data.data.children;
-            const randomPost = posts[Math.floor(Math.random() * posts.length)];
-            const imageUrl = randomPost.data.url;
-      
+            const imagePosts = posts.filter(post => /\.(jpg|jpeg|png|gif|gifv)$/i.test(post.data.url));
+            const randomPost = imagePosts[Math.floor(Math.random() * imagePosts.length)];
+            const imageUrl = randomPost.data.url.replace(/\.gifv/g, '.gif');
+    
             message.channel.send({ files: [imageUrl] });
-          })
-          .catch(error => {
+        })
+        .catch(error => {
             console.log(error);
             message.channel.send('There was an error getting the image :(');
-          });
+        });
     }
 
 });
