@@ -1,5 +1,7 @@
 const Discord = require('discord.js');
 const ytdl = require("ytdl-core");
+const axios = require('axios');
+
 const client = new Discord.Client({ intents: [] });
 const TOKEN = 'TokenOfYourBot';
 
@@ -51,15 +53,42 @@ client.on("message", message => {
             const embed = new Discord.MessageEmbed()
                 .setColor(getRandomColor())
                 .setTitle('**All Commands:**')
-                .addField('t!clear', 'Deletes a set of messages')
-                .addField('t!kick', 'Kick members')
-                .addField('t!ban', 'Ban members')
-                .addField('t!role' , 'Distribute roles')
-                .addField('t!userinfo', 'Informations of members')
-                .addField('t!play', 'Play youtube audio in voice channel')
-                .addField('t!stop', 'Stop youtube audio in voice channel')
-                .addField('t!skip', 'Skip youtube audio in voice channel')
-                .setFooter('This Bot belongs to: darrenefecto#4662')
+                .addField(` `, ' ', false)
+                .addField(` `, '**General:**', false)
+                .addField(`${prefix}clear`, 'Deletes a set of messages', true)
+                .addField(`${prefix}kick`, 'Kicks members', true)
+                .addField(`${prefix}ban`, 'Bans members', true)
+                .addField(`${prefix}role` , 'Distributes roles', true)
+                .addField(`${prefix}userinfo`, 'Shows member information', true)
+                .addField(` `, ' ', false)
+                .addField(` `, '**Fun:**', false)
+                .addField(`${prefix}meme`, 'Displays a random meme', true)
+                .addField(`${prefix}animeme`, 'Displays a random meme', true)
+                .addField(` `, ' ', false)
+                .addField(` `, '**Music:**', false)
+                .addField(`${prefix}play`, 'Plays YouTube audio in a voice channel', true)
+                .addField(`${prefix}stop`, 'Stops YouTube audio in a voice channel', true)
+                .addField(`${prefix}skip`, 'Skips YouTube audio in a voice channel', true)
+                .addField(` `, ' ', false)
+                .addField(` `, '**NSFW:**', false)
+                .addField(`${prefix}nsfw`, 'Sets channel to nsfw mode', false)
+                if (message.channel.nsfw)
+                {
+                    embed.addField(` `, ' ', false)
+                    embed.addField(` `, '**3D:**', false)
+                    embed.addField(`${prefix}boobs`, 'Sends a random boobs', true)
+                    embed.addField(`${prefix}cumsluts`, 'Sends random cumsluts', true)
+                    embed.addField(`${prefix}ass`, 'Sends a random pic of ass', true)
+                    embed.addField(`${prefix}cosplay`, 'Sends a random pic of cosplay', true)
+                    embed.addField(`${prefix}blowjob`, 'Sends random blowjob', true)
+                    embed.addField(`${prefix}tights`, 'Sends random tights', true)
+                    
+                    embed.addField(` `, ' ', false)
+                    embed.addField(` `, '**2D:**', false)
+                    embed.addField(`${prefix}hentai`, 'Sends a random hentai', true)
+                    embed.addField(`${prefix}hboobs`, 'Sends random hentai boobs', true)
+                }
+                embed.setFooter('This Bot belongs to: darrenefecto#4662')
 
             message.channel.send(embed);
         }
@@ -68,19 +97,31 @@ client.on("message", message => {
             if (!message.member.hasPermission("MANAGE_MESSAGES")) {
                 return message.reply("You do not have permission to use this command.");
             }
-
+        
             const amount = parseInt(arg[1]);
-
+        
             if (isNaN(amount)) {
                 return message.reply('Please enter a valid number');
             } else if (amount <= 0 || amount > 100) {
                 return message.reply('Please enter a number between 1 and 100');
             }
-
-            message.channel.bulkDelete(amount)
+        
+            message.channel.bulkDelete(amount, true)
+                .then(messages => {
+                    const oldMessages = messages.filter(msg => (Date.now() - msg.createdTimestamp) > 1209600000 && !msg.pinned);
+                    if (oldMessages.size > 0) {
+                        message.channel.bulkDelete(oldMessages, true)
+                            .catch(error => {
+                                console.error(error);
+                                message.reply('Error occurred while deleting old messages.');
+                            });
+                    } else {
+                        message.reply('Remember: ``Messages must be under 14 days old.``');
+                    }
+                })
                 .catch(error => {
                     console.error(error);
-                    message.reply('Error occurred while deleting messages');
+                    message.reply('Error occurred while deleting messages.');
                 });
         }
         // ---------------- KICK COMMAND ----------------------
@@ -177,7 +218,7 @@ client.on("message", message => {
             .setColor(getRandomColor())
             .setThumbnail(user.displayAvatarURL({ dynamic: true }))
             .addField("Username", `${user.username}#${user.discriminator}`)
-            .addField("ID", message.member.hasPermission("ADMINISTRATOR") ? user.id : "*Restricted*")
+            .addField("ID", user.id)
             .addField("Status", user.presence.status)
             .addField("Joined Server", member.joinedAt.toLocaleDateString())
             .addField("Account Created", user.createdAt.toLocaleDateString())
@@ -193,7 +234,7 @@ client.on("message", message => {
 });
 
 
-// // ---------------- MUSIC COMMAND ----------------------
+// ---------------- MUSIC COMMAND ----------------------
 
 const queue = new Map();
 
@@ -292,5 +333,241 @@ async function play(guild, song) {
   serverQueue.textChannel.send(`Start playing: **${song.title}**`);
 }
 
+// ---------------- MEME COMMAND ----------------------
+
+client.on('message', async message => {
+    if (!message.content.startsWith(prefix) || message.author.bot) return;
+
+    const args = message.content.slice(prefix.length).trim().split(' ');
+    const command = args.shift().toLowerCase();
+    
+    if (command === 'meme') {
+      try {
+        const subreddit = message.channel.nsfw ? 'dankmemes' : 'memes';
+        const response = await axios.get(`https://www.reddit.com/r/${subreddit}/random/.json`);
+        const json = response.data;
+        const image = json[0].data.children[0].data.url;
+        const title = json[0].data.children[0].data.title;
+        
+        const embed = new Discord.MessageEmbed()
+          .setTitle(title)
+          .setImage(image)
+          .setFooter(`r/${subreddit}`);
+        
+        message.channel.send(embed);
+      } catch (error) {
+        console.error(error);
+        message.reply('I was unable to fetch a meme. Please try again later.');
+      }
+    }
+
+    if (command === 'animeme') {
+        try {
+          const subreddit = 'animemes';
+          const response = await axios.get(`https://www.reddit.com/r/${subreddit}/random/.json`);
+          const json = response.data;
+          const image = json[0].data.children[0].data.url;
+          const title = json[0].data.children[0].data.title;
+          
+          const embed = new Discord.MessageEmbed()
+            .setTitle(title)
+            .setImage(image)
+            .setFooter(`r/${subreddit}`);
+          
+          message.channel.send(embed);
+        } catch (error) {
+          console.error(error);
+          message.reply('I was unable to fetch a meme. Please try again later.');
+        }
+      }
+});
+
+// ---------------- NSFW COMMAND ----------------------
+
+client.on('message', async message => {
+    if (!message.content.startsWith(prefix) || message.author.bot) return;
+
+    const args = message.content.slice(prefix.length).trim().split(' ');
+    const command = args.shift().toLowerCase();
+
+    if (command === 'nsfw') {
+    // Check if user has permission to manage channels
+    if (!message.member.hasPermission('MANAGE_CHANNELS')) {
+        return message.reply('You do not have permission to manage channels.');
+    }
+    
+    // Get the channel to make NSFW
+    const channel = message.mentions.channels.first() || message.channel;
+
+    // Make the channel NSFW
+    channel.setNSFW(true, 'This channel is now NSFW')
+        .then(updatedChannel => {
+        message.channel.send(`The channel ${updatedChannel.name} is now NSFW.`);
+        })
+        .catch(err => {
+        console.log(err);
+        message.channel.send(`There was an error making the channel NSFW: ${err}`);
+        });
+    }
+
+    // Category Boobs
+    if (command === 'boobs') {
+        if (!message.channel.nsfw) {
+            return message.reply('This command can only be used in a NSFW channel.');
+        }
+
+        axios.get('https://www.reddit.com/r/boobies/hot.json')
+          .then(response => {
+            const posts = response.data.data.children;
+            const randomPost = posts[Math.floor(Math.random() * posts.length)];
+            const imageUrl = randomPost.data.url;
+      
+            message.channel.send({ files: [imageUrl] });
+          })
+          .catch(error => {
+            console.log(error);
+            message.channel.send('There was an error getting the image :(');
+          });
+    }
+
+    // Category Cumsluts
+    if (command === 'cumsluts') {
+        if (!message.channel.nsfw) {
+            return message.reply('This command can only be used in a NSFW channel.');
+        }
+
+        axios.get('https://www.reddit.com/r/cumsluts/hot.json')
+          .then(response => {
+            const posts = response.data.data.children;
+            const randomPost = posts[Math.floor(Math.random() * posts.length)];
+            const imageUrl = randomPost.data.url;
+      
+            message.channel.send({ files: [imageUrl] });
+          })
+          .catch(error => {
+            console.log(error);
+            message.channel.send('There was an error getting the image :(');
+          });
+    }
+
+    // Category Cosplay
+    if (command === 'cosplay') {
+        if (!message.channel.nsfw) {
+            return message.reply('This command can only be used in a NSFW channel.');
+        }
+
+        axios.get('https://www.reddit.com/r/cosplaygirls/hot.json')
+          .then(response => {
+            const posts = response.data.data.children;
+            const randomPost = posts[Math.floor(Math.random() * posts.length)];
+            const imageUrl = randomPost.data.url;
+      
+            message.channel.send({ files: [imageUrl] });
+          })
+          .catch(error => {
+            console.log(error);
+            message.channel.send('There was an error getting the image :(');
+          });
+    }
+
+    // Category Ass
+    if (command === 'ass') {
+        if (!message.channel.nsfw) {
+            return message.reply('This command can only be used in a NSFW channel.');
+        }
+
+        axios.get('https://www.reddit.com/r/ass/hot.json')
+          .then(response => {
+            const posts = response.data.data.children;
+            const randomPost = posts[Math.floor(Math.random() * posts.length)];
+            const imageUrl = randomPost.data.url;
+      
+            message.channel.send({ files: [imageUrl] });
+          })
+          .catch(error => {
+            console.log(error);
+            message.channel.send('There was an error getting the image :(');
+          });
+    }
+
+    // Category Blowjob
+    if (command === 'blowjob') {
+        if (!message.channel.nsfw) {
+            return message.reply('This command can only be used in a NSFW channel.');
+        }
+
+        axios.get('https://www.reddit.com/r/blowjob/hot.json')
+          .then(response => {
+            const posts = response.data.data.children;
+            const randomPost = posts[Math.floor(Math.random() * posts.length)];
+            const imageUrl = randomPost.data.url;
+      
+            message.channel.send({ files: [imageUrl] });
+          })
+          .catch(error => {
+            console.log(error);
+            message.channel.send('There was an error getting the image :(');
+          });
+    }
+
+    // Category Thigths
+    if (command === 'tights') {
+        if (!message.channel.nsfw) {
+            return message.reply('This command can only be used in a NSFW channel.');
+        }
+
+        axios.get('https://www.reddit.com/r/tights/hot.json')
+          .then(response => {
+            const posts = response.data.data.children;
+            const randomPost = posts[Math.floor(Math.random() * posts.length)];
+            const imageUrl = randomPost.data.url;
+      
+            message.channel.send({ files: [imageUrl] });
+          })
+          .catch(error => {
+            console.log(error);
+            message.channel.send('There was an error getting the image :(');
+          });
+    }
+
+    // Category Hanime
+    if (command === 'hentai') {
+        if (!message.channel.nsfw) {
+            return message.reply('This command can only be used in a NSFW channel.');
+        }
+        axios.get('https://www.reddit.com/r/hentai/hot.json')
+          .then(response => {
+            const posts = response.data.data.children;
+            const randomPost = posts[Math.floor(Math.random() * posts.length)];
+            const imageUrl = randomPost.data.url;
+      
+            message.channel.send({ files: [imageUrl] });
+          })
+          .catch(error => {
+            console.log(error);
+            message.channel.send('There was an error getting the image :(');
+          });
+    }
+
+    // Category hboobs
+    if (command === 'hboobs') {
+        if (!message.channel.nsfw) {
+            return message.reply('This command can only be used in a NSFW channel.');
+        }
+        axios.get('https://www.reddit.com/r/AnimeBust/hot.json')
+          .then(response => {
+            const posts = response.data.data.children;
+            const randomPost = posts[Math.floor(Math.random() * posts.length)];
+            const imageUrl = randomPost.data.url;
+      
+            message.channel.send({ files: [imageUrl] });
+          })
+          .catch(error => {
+            console.log(error);
+            message.channel.send('There was an error getting the image :(');
+          });
+    }
+
+});
 
 client.login(TOKEN)
