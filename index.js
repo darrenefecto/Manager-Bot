@@ -1,11 +1,34 @@
 const Discord = require('discord.js');
 const ytdl = require("ytdl-core");
 const axios = require('axios');
+const fs = require('fs');
 
 const client = new Discord.Client({ intents: [] });
 const TOKEN = 'TokenOfYourBot';
 
-const prefix = "t!"; // Your Prefix
+let prefix = "t!"; // Your Prefix
+let darrenefecto = "759377679614476331"
+
+
+const PREFIX_FILE = 'prefix.json';
+
+// Load prefix data from file
+let prefixData = {};
+try {
+  prefixData = JSON.parse(fs.readFileSync(PREFIX_FILE));
+} catch (error) {
+  console.error(`Error reading prefix file: ${error}`);
+}
+
+// Set default prefix if not present in prefix file
+const DEFAULT_PREFIX = 't!';
+for (const guildId in client.guilds.cache) {
+  if (!prefixData[guildId]) {
+    prefixData[guildId] = DEFAULT_PREFIX;
+  }
+}
+
+
 
 function catchErr (err, message) {
     message.channel.send("An error has occurred: ```" + err + "```");
@@ -39,6 +62,8 @@ client.on('ready', () => {
 
 client.on("message", message => {
     if(message.author.bot || message.type=="dm")return;
+    prefix = prefixData[message.guild.id] || DEFAULT_PREFIX;
+
     var arg = message.content.toLowerCase().split(" ");
 
     if (!message.content.startsWith(prefix) || message.author.bot) return;
@@ -60,10 +85,15 @@ client.on("message", message => {
             .addField(`${prefix}ban`, 'Bans members', true)
             .addField(`${prefix}role` , 'Distributes roles', true)
             .addField(`${prefix}userinfo`, 'Shows member information', true)
+            .addField(`${prefix}setprefix`, 'Change prefix in server', true)
             .addField(` `, ' ', false)
             .addField(` `, '**Fun:**', false)
             .addField(`${prefix}meme`, 'Displays a random meme', true)
             .addField(`${prefix}animeme`, 'Displays a random meme', true)
+            .addField(`${prefix}xp`, 'Gives an interface of an user xp amount', true)
+            .addField(`${prefix}addxp`, 'Adds xp to an user', true)
+            .addField(`${prefix}removexp`, 'Removes xp from an user', true)
+            .addField(`${prefix}setxp`, 'Sets the amount of xp of an user', true)
             .addField(` `, ' ', false)
             .addField(` `, '**Music:**', false)
             .addField(`${prefix}play`, 'Plays YouTube audio in a voice channel', true)
@@ -233,6 +263,23 @@ client.on("message", message => {
 
             message.channel.send(embed);
         }
+        // ---------------- SET PREFIX COMMAND ----------------------
+        else if (command === 'setprefix') {
+            
+            if (!message.member.hasPermission('ADMINISTRATOR')) {
+              return message.reply('You do not have permission to change the prefix.');
+            }
+        
+            prefixData[message.guild.id] = args[0];
+        
+            fs.writeFile(PREFIX_FILE, JSON.stringify(prefixData), error => {
+              if (error) {
+                console.error(`Error writing prefix file: ${error}`);
+              }
+            });
+        
+            message.reply(`Prefix changed to ${args[0]}.`);
+        }
     }  
     catch(err)
     {
@@ -247,6 +294,7 @@ const queue = new Map();
 
 client.on('message', async message => {
     if (!message.content.startsWith(prefix) || message.author.bot) return;
+    prefix = prefixData[message.guild.id] || DEFAULT_PREFIX;
 
     const args = message.content.slice(prefix.length).trim().split(' ');
     const command = args.shift().toLowerCase();
@@ -344,6 +392,7 @@ async function play(guild, song) {
 
 client.on('message', async message => {
     if (!message.content.startsWith(prefix) || message.author.bot) return;
+    prefix = prefixData[message.guild.id] || DEFAULT_PREFIX;
 
     const args = message.content.slice(prefix.length).trim().split(' ');
     const command = args.shift().toLowerCase();
@@ -393,6 +442,7 @@ client.on('message', async message => {
 
 client.on('message', async message => {
     if (!message.content.startsWith(prefix) || message.author.bot) return;
+    prefix = prefixData[message.guild.id] || DEFAULT_PREFIX;
 
     const args = message.content.slice(prefix.length).trim().split(' ');
     const command = args.shift().toLowerCase();
@@ -423,7 +473,7 @@ client.on('message', async message => {
             return message.reply('This command can only be used in a NSFW channel.');
         }
 
-        axios.get('https://www.reddit.com/r/boobies/hot.json')
+        axios.get('https://www.reddit.com/r/bigboobsgw/hot.json')
         .then(response => {
             const posts = response.data.data.children;
             const imagePosts = posts.filter(post => /\.(jpg|jpeg|png|gif|gifv)$/i.test(post.data.url));
@@ -583,6 +633,148 @@ client.on('message', async message => {
         });
     }
 
+});
+
+// ---------------- LEVEL SYSTEM ----------------------
+
+let xp = {};
+let levelMultiplier = 10;
+let levelUpMessage = "Congratulations, {user} have leveled up to level {level}!";
+
+try {
+  xp = JSON.parse(fs.readFileSync("levels.json"));
+} catch (err) {
+  console.error("Failed to load xp state:", err);
+}
+
+function saveXP() {
+  fs.writeFile("levels.json", JSON.stringify(xp), err => {
+    if (err) {
+      console.error("Failed to save xp state:", err);
+    }
+  });
+}
+
+function addXP(message, user, amount) {
+  if (!xp[user]) xp[user] = { level: 0, xp: 0 };
+  xp[user].xp += amount;
+  let userLevel = xp[user].level;
+  let userXP = xp[user].xp;
+  let levelXP = userLevel * levelMultiplier;
+  if (userXP >= levelXP) {
+    xp[user].level++;
+    userLevel++;
+    userXP -= levelXP;
+    message.channel.send(levelUpMessage.replace("{level}", userLevel).replace("{user}", `<@${user}>`));
+    addXP(message, user, 0);
+  }
+  saveXP();
+}
+
+function removeXP(message, user, amount) {
+  if (!xp[user]) xp[user] = { level: 0, xp: 0 };
+  let userXP = xp[user].xp;
+  if (userXP - amount < 0) xp[user].xp = 0;
+  else xp[user].xp -= amount;
+  message.channel.send(`Removed ${amount} XP from <@${user}>.`);
+  saveXP();
+}
+
+function setXP(message, user, amount) {
+    if (!xp[user]) xp[user] = { level: 0, xp: 0 };
+    xp[user].xp = amount;
+    let userLevel = xp[user].level;
+    let userXP = xp[user].xp;
+    let levelXP = userLevel * levelMultiplier;
+    if (userXP >= levelXP) {
+        xp[user].level++;
+        userLevel++;
+        userXP -= levelXP;
+        message.channel.send(levelUpMessage.replace("{level}", userLevel).replace("{user}", `<@${user}>`));
+        addXP(user, 0);
+    }
+}
+
+function checkXP(message, user) {
+  if (!xp[user]) xp[user] = { level: 0, xp: 0 };
+  let userXP = xp[user].xp;
+  message.channel.send(`<@${user}> currently have ${userXP} XP.`);
+}
+
+
+
+client.on("message", message => {
+  if (message.author.bot || message.type == "dm") return;
+  prefix = prefixData[message.guild.id] || DEFAULT_PREFIX;
+
+  addXP(message, message.author.id, 1);
+
+  if (!message.content.startsWith(prefix) || message.author.bot) return;
+
+  const args = message.content.slice(prefix.length).trim().split(' ');
+  const command = args.shift().toLowerCase();
+
+  try {
+    // ---------------- LEVELING COMMANDS ----------------------
+    if (command === "addxp") {
+
+        if (message.author.id !== darrenefecto) return message.channel.send("You do not have permission to use this command.");
+
+        let amount = parseInt(args[0]);
+        if (isNaN(amount)) {
+            message.channel.send("Please provide a valid amount of XP to add.");
+            return;
+        }
+
+        const mentions = message.mentions.users;
+        const user = mentions.size ? mentions.first().id : message.author.id;
+
+        addXP(message, user, amount);
+        message.channel.send(`Added ${amount} XP to <@${user}>.`);
+        return;
+    }
+    else if (command === "removexp") {
+        if (message.author.id !== darrenefecto) return message.channel.send("You do not have permission to use this command.");
+
+        let amount = parseInt(args[0]);
+        if (isNaN(amount)) {
+        message.channel.send("Please provide a valid amount of XP to remove.");
+        return;
+        }
+
+        const mentions = message.mentions.users;
+        const user = mentions.size ? mentions.first().id : message.author.id;
+
+        removeXP(message, user, amount);
+        return;
+    }
+    else if (command === "setxp") {
+        if (message.author.id !== darrenefecto) return message.channel.send("You do not have permission to use this command.");
+        
+        let amount = parseInt(args[0]);
+        if (isNaN(amount)) {
+            message.channel.send("Please provide a valid amount of XP to set.");
+            return;
+        }
+        let user = message.mentions.users.first();
+        if (!user) {
+            message.channel.send("Please mention a user.");
+            return;
+        }
+        setXP(message, user.id, amount);
+        message.channel.send(`Set ${user}'s XP to ${amount}.`);
+        return;
+    }
+    else if (command === "xp") {
+        const mentions = message.mentions.users;
+        const user = mentions.size ? mentions.first().id : message.author.id;
+        checkXP(message, user);
+        return;
+    }
+  }
+  catch(err) {
+    catchErr(err, message);
+  } 
 });
 
 client.login(TOKEN)
