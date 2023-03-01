@@ -715,7 +715,8 @@ function setXP(message, user, amount) {
 function checkXP(message, user) {
   if (!xp[user]) xp[user] = { level: 0, xp: 0 };
   let userXP = xp[user].xp;
-  message.channel.send(`<@${user}> currently have ${userXP} XP.`);
+  let userLevel = xp[user].level;
+  message.channel.send(`<@${user}> is currently Level ${userLevel} with ${userXP} XP.`);
 }
 
 
