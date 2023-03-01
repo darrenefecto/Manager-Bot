@@ -7,11 +7,12 @@ const client = new Discord.Client({ intents: [] });
 
 // Token
 let TOKEN;
+let keepAlive;
 
 // Check if Replit used
 if (process.env.REPLIT_DB_URL || fs.existsSync('.replit')) {
     TOKEN = process.env["TOKEN"];
-    const keepAlive = require('./server.js') // Remove this if you dont want this
+    keepAlive = require('./server.js') // Remove this if you dont want this
 } else {
     TOKEN = 'YourBotToken';
 }
@@ -58,17 +59,7 @@ function getRandomColor() {
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
 
-    let statuses = [
-        `music`,
-        `${prefix}help`,
-        `commands`
-    ]
-
-    setInterval(function(){
-        let statuse = statuses[Math.floor(Math.random() * statuses.length)];
-        client.user.setActivity(statuse, {type: 'LISTENING'}).catch(console.error);
-        
-    }, 3000)
+    client.user.setActivity("mention me!", {type: 'WATCHING'}).catch(console.error);
 })
 
 
@@ -78,14 +69,14 @@ client.on("message", message => {
 
     var arg = message.content.toLowerCase().split(" ");
 
-    if (!message.content.startsWith(prefix) || message.author.bot) return;
+    if (message.author.bot) return;
 
     const args = message.content.slice(prefix.length).trim().split(' ');
     const command = args.shift().toLowerCase();
 
     try {
         // ---------------- HELP COMMAND ----------------------
-        if (command === "help") {
+        if (command === "help" || message.mentions.has("1079374608626622514")) {
             const embed1 = new Discord.MessageEmbed()
             .setColor(getRandomColor())
             .setTitle('**All General Commands:**')
