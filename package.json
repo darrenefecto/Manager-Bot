@@ -1,6 +1,6 @@
 {
   "name": "manager-bot",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "I'm helping my servers",
   "main": "index.js",
   "scripts": {

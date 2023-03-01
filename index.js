@@ -4,12 +4,24 @@ const axios = require('axios');
 const fs = require('fs');
 
 const client = new Discord.Client({ intents: [] });
-const TOKEN = 'TokenOfYourBot';
+
+// Token
+let TOKEN;
+
+// Check if Replit used
+if (process.env.REPLIT_DB_URL || fs.existsSync('.replit')) {
+    TOKEN = process.env["TOKEN"];
+    const keepAlive = require('./server.js') // Remove this if you dont want this
+} else {
+    TOKEN = 'YourBotToken';
+}
 
 let prefix = "t!"; // Your Prefix
 let darrenefecto = "759377679614476331"
 
 
+
+// PREFIX 
 const PREFIX_FILE = 'prefix.json';
 
 // Load prefix data from file
@@ -73,8 +85,7 @@ client.on("message", message => {
 
     try {
         // ---------------- HELP COMMAND ----------------------
-        if (command === "help")
-        {
+        if (command === "help") {
             const embed1 = new Discord.MessageEmbed()
             .setColor(getRandomColor())
             .setTitle('**All General Commands:**')
@@ -86,6 +97,9 @@ client.on("message", message => {
             .addField(`${prefix}role` , 'Distributes roles', true)
             .addField(`${prefix}userinfo`, 'Shows member information', true)
             .addField(`${prefix}setprefix`, 'Change prefix in server', true)
+            .addField(` `, ' ', false)
+            .addField(` `, '**Bot:**', false)
+            .addField(`${prefix}servers`, 'Shows amount of joined server', true)
             .addField(` `, ' ', false)
             .addField(` `, '**Fun:**', false)
             .addField(`${prefix}meme`, 'Displays a random meme', true)
@@ -280,12 +294,17 @@ client.on("message", message => {
         
             message.reply(`Prefix changed to ${args[0]}.`);
         }
+        // ---------------- Servers COMMAND ----------------------
+        else if (command === 'servers') {
+            message.channel.send(`Ready on ${client.guilds.cache.size} servers.`);
+        }
     }  
     catch(err)
     {
         catchErr(err, message);
     } 
 });
+
 
 
 // ---------------- MUSIC COMMAND ----------------------
@@ -388,6 +407,8 @@ async function play(guild, song) {
   serverQueue.textChannel.send(`Start playing: **${song.title}**`);
 }
 
+
+
 // ---------------- MEME COMMAND ----------------------
 
 client.on('message', async message => {
@@ -437,6 +458,8 @@ client.on('message', async message => {
         }
       }
 });
+
+
 
 // ---------------- NSFW COMMAND ----------------------
 
@@ -635,6 +658,8 @@ client.on('message', async message => {
 
 });
 
+
+
 // ---------------- LEVEL SYSTEM ----------------------
 
 let xp = {};
@@ -656,19 +681,20 @@ function saveXP() {
 }
 
 function addXP(message, user, amount) {
-  if (!xp[user]) xp[user] = { level: 0, xp: 0 };
-  xp[user].xp += amount;
-  let userLevel = xp[user].level;
-  let userXP = xp[user].xp;
-  let levelXP = userLevel * levelMultiplier;
-  if (userXP >= levelXP) {
-    xp[user].level++;
-    userLevel++;
-    userXP -= levelXP;
-    message.channel.send(levelUpMessage.replace("{level}", userLevel).replace("{user}", `<@${user}>`));
-    addXP(message, user, 0);
-  }
-  saveXP();
+    if (!xp[user]) xp[user] = { level: 0, xp: 0 };
+    xp[user].xp += amount;
+    let userLevel = xp[user].level;
+    let userXP = xp[user].xp;
+    let levelXP = userLevel * levelMultiplier;
+    if (userXP >= levelXP) {
+      xp[user].level++;
+      userLevel++;
+      userXP -= levelXP;
+      levelMultiplier *= 2;
+      message.channel.send(levelUpMessage.replace("{level}", userLevel).replace("{user}", `<@${user}>`));
+      addXP(message, user, 0);
+    }
+    saveXP();
 }
 
 function removeXP(message, user, amount) {
@@ -778,3 +804,4 @@ client.on("message", message => {
 });
 
 client.login(TOKEN)
+keepAlive();
