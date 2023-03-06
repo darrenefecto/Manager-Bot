@@ -19,6 +19,9 @@ for (const file of eventFiles) {
 	}
 }
 
+client.on('ready', () => {
+	client.user.setActivity("/help", {type: 'WATCHING'});
+});
 
 client.login(TOKEN)
 
