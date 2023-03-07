@@ -3,6 +3,7 @@ const path = require('node:path');
 const { Client, Collection, GatewayIntentBits } = require('discord.js');
 const { TOKEN, keepAlive } = require('./config');
 
+
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.DirectMessages, GatewayIntentBits.GuildMessages] });
 client.commands = new Collection();
 
@@ -13,15 +14,11 @@ for (const file of eventFiles) {
 	const filePath = path.join(eventsPath, file);
 	const event = require(filePath);
 	if (event.once) {
-		client.once(event.name, (...args) => event.execute(...args));
+		client.once(event.name, (...args) => event.execute(client, ...args));
 	} else {
 		client.on(event.name, (...args) => event.execute(...args));
 	}
 }
-
-client.on('ready', () => {
-	client.user.setActivity("/help", {type: 'WATCHING'});
-});
 
 client.login(TOKEN)
 

@@ -17,13 +17,16 @@ module.exports = {
                 {name: `/role`, value: `Distributes roles`, inline: true},
                 {name: `/userinfo`, value: `Shows member information`, inline: true},
                 {name: ` `, value: ` `, inline: false},
+                {name: ` `, value: `**Personal:**`, inline: false},
+                {name: `/reminder`, value: `Set a reminder for a specific time`, inline: true},
+                {name: `/clock`, value: `Get the current time in a specified country`, inline: true},
+                {name: ` `, value: ` `, inline: false},
                 {name: ` `, value: `**Fun:**`, inline: false},
                 {name: `/meme`, value: `Displays a random meme`, inline: true},
                 {name: `/animeme`, value: `Displays a random anime meme`, inline: true},
                 {name: `/xp`, value: `Gives an interface of an user xp amount`, inline: true},
-                {name: `/addxp`, value: `Adds xp to an user`, inline: true},
-                {name: `/removexp`, value: `Removes xp from an user`, inline: true},
-                {name: `/setxp`, value: `Sets the amount of xp of an user`, inline: true},
+                {name: `/coinflip`, value: `Flip a coin and see the result`, inline: true},
+                {name: `/rps`, value: `Play rock, paper, scissors with this bot`, inline: true},
                 {name: ` `, value: `**NSFW:**`, inline: false},
                 {name: `/nsfw`, value: `Set channel to nsfw for more help...`, inline: true},
                 {name: `/nsfwh`, value: `Set channel to nsfw for more help...`, inline: true},
@@ -59,12 +62,7 @@ module.exports = {
 };
 
 function getRandomColor() {
-    const letters = '0123456789ABCDEF';
-    let color = '#';
-    for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
+  return Math.floor(Math.random() * 16777215);
 }
 
 async function send(message, interaction)

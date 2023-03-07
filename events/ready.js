@@ -1,5 +1,4 @@
-const { Events } = require('discord.js');
-const { REST, Routes } = require('discord.js');
+const { REST, Routes, ActivityType, Events } = require('discord.js');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -21,11 +20,12 @@ const rest = new REST({ version: '10' }).setToken(TOKEN);
 
 module.exports = {
 	name: Events.ClientReady,
-	once: false,
+	once: true,
 	async execute(client) {
-		console.log(`Logged in as ${client.user.tag} and is connected to ${client.guilds.cache.size} guilds.`);
-
-        client.user.setActivity("/help", {type: 'WATCHING'});
+        console.log(`Logged in as ${client.user.tag} and is connected to ${client.guilds.cache.size} guilds.`);
+        client.user.setPresence({
+            activities: [{ name: `/help`, type: ActivityType.Watching }]
+        });
 
         try {
             console.log(`Started refreshing ${commands.length} application (/) commands.`);

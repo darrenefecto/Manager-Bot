@@ -20,7 +20,6 @@ module.exports = {
 
       await send({ embeds: [embed] }, interaction);
     } catch (error) {
-      console.error(error);
       await send('I was unable to fetch a meme. Please try again later.', interaction);
     }
   },
