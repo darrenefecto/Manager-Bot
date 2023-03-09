@@ -28,8 +28,6 @@ module.exports = {
                 return;
             }
 
-            console.log(`Started refreshing ${commands.length} application (/) commands.`);
-
             // Refresh commands for each guild the bot is connected to
             const promises = [];
             for (const guild of client.guilds.cache.values()) {
@@ -42,7 +40,6 @@ module.exports = {
             }
             await Promise.allSettled(promises);
 
-            console.log(`Successfully reloaded application (/) commands.`);
         } catch (error) {
             console.error(error);
         }

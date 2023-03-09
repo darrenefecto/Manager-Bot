@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { addXP, removeXP, setXP, checkXP, send} = require('../xpFunctions')
+const { addXP, removeXP, setXP, checkXP, send, leaderboard} = require('../xpFunctions')
 const { darrenefecto } = require('../config')
 
 module.exports = {
@@ -45,42 +45,55 @@ module.exports = {
   .addSubcommand(subcommand =>
     subcommand
       .setName('show')
-      .setDescription('Shows state of user\'s XP')
+      .setDescription('Displays specific user\'s xp amount and level')
       .addUserOption(option =>
         option.setName('user')
           .setDescription('The user to show XP state for')
-          .setRequired(false))),
+          .setRequired(false)))
+  .addSubcommand(subcommand => 
+    subcommand
+      .setName('leaderboard')
+      .setDescription('Displays the top 10 users based on their XP and Level')
+  ),
   async execute(interaction) {
-    const subcommand = interaction.options.getSubcommand();
+    try {
+      const subcommand = interaction.options.getSubcommand();
 
-    if (subcommand === 'show'){
+      if (subcommand === 'show'){
+          const user = interaction.options.getUser('user') || interaction.user;
+          checkXP(interaction, user.id);
+      }
+      else if (subcommand === 'leaderboard'){
+        await leaderboard(interaction);
+      }
+      else if (subcommand === 'add') {
+          if (interaction.user.id !== darrenefecto) {
+              return send("Only Darrenefecto can use this subcommand right now...", interaction);
+          }
+        const amount = interaction.options.getInteger('amount');
         const user = interaction.options.getUser('user') || interaction.user;
-        checkXP(interaction, user.id);
+        await send(`Added ${amount} XP to <@${user.id}>.`, interaction);
+        addXP(interaction, user.id, amount);
+      } else if (subcommand === 'remove') {
+          if (interaction.user.id !== darrenefecto) {
+              return send("Only Darrenefecto can use this subcommand right now...", interaction);
+          }
+        const amount = interaction.options.getInteger('amount');
+        const user = interaction.options.getUser('user') || interaction.user;
+        await send(`Set <@${user.id}>'s XP to ${amount}.`, interaction);
+        removeXP(interaction, user.id, amount);
+      } else if (subcommand === 'set') {
+          if (interaction.user.id !== darrenefecto) {
+              return send("Only Darrenefecto can use this subcommand right now...", interaction);
+          }
+        const amount = interaction.options.getInteger('amount');
+        const user = interaction.options.getUser('user') || interaction.user;
+        await send(`Set <@${user.id}>'s XP to ${amount}.`, interaction);
+        setXP(interaction, user.id, amount);
+      }
     }
-    else if (subcommand === 'add') {
-        if (interaction.user.id !== darrenefecto) {
-            return send("Only Darrenefecto can use this subcommand right now...", interaction);
-        }
-      const amount = interaction.options.getInteger('amount');
-      const user = interaction.options.getUser('user') || interaction.user;
-      await send(`Added ${amount} XP to <@${user.id}>.`, interaction);
-      addXP(interaction, user.id, amount);
-    } else if (subcommand === 'remove') {
-        if (interaction.user.id !== darrenefecto) {
-            return send("Only Darrenefecto can use this subcommand right now...", interaction);
-        }
-      const amount = interaction.options.getInteger('amount');
-      const user = interaction.options.getUser('user') || interaction.user;
-      await send(`Set <@${user.id}>'s XP to ${amount}.`, interaction);
-      removeXP(interaction, user.id, amount);
-    } else if (subcommand === 'set') {
-        if (interaction.user.id !== darrenefecto) {
-            return send("Only Darrenefecto can use this subcommand right now...", interaction);
-        }
-      const amount = interaction.options.getInteger('amount');
-      const user = interaction.options.getUser('user') || interaction.user;
-      await send(`Set <@${user.id}>'s XP to ${amount}.`, interaction);
-      setXP(interaction, user.id, amount);
+    catch (err) {
+      await send('There was an error while processing your request.', interaction);
     }
   },
 };
