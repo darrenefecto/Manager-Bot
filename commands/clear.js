@@ -23,15 +23,15 @@ module.exports = {
 
     interaction.channel.bulkDelete(amount, true)
       .then(deletedMessages => {
-        //console.log(`Deleted ${deletedMessages.size} messages`);
-        const oldMessages = deletedMessages.filter(msg => (Date.now() - msg.createdTimestamp) > 1209600000 && !msg.pinned);
-        //console.log(`Found ${oldMessages.size} old messages`);
-        if (oldMessages.size > 0) {
-          interaction.channel.bulkDelete(oldMessages, true)
-            .catch(error => {
-              console.error(error);
-              send('Error occurred while deleting old messages.', interaction);
-            });
+        if (deletedMessages) {
+          const oldMessages = deletedMessages.filter(msg => (Date.now() - msg.createdTimestamp) > 1209600000 && !msg.pinned);
+          if (oldMessages.size > 0) {
+            interaction.channel.bulkDelete(oldMessages, true)
+              .catch(error => {
+                console.error(error);
+                send('Error occurred while deleting old messages.', interaction);
+              });
+          }
         }
       })
       .catch(error => {

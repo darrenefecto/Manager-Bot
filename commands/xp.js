@@ -80,7 +80,6 @@ module.exports = {
           }
         const amount = interaction.options.getInteger('amount');
         const user = interaction.options.getUser('user') || interaction.user;
-        await send(`Set <@${user.id}>'s XP to ${amount}.`, interaction);
         removeXP(interaction, user.id, amount);
       } else if (subcommand === 'set') {
           if (interaction.user.id !== darrenefecto) {
