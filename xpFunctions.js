@@ -8,19 +8,20 @@ let levelUpMessage = "Congratulations, {user} have leveled up to level {level}!"
 
 
 async function addXP(message, user, amount) {
-  let xp = await xpModel.findOne({ guildId: message.guild.id, userId: user });
-  if (!xp) {
-    xp = await new xpModel({
-      _id: new mongoose.Types.ObjectId(),
-      guildId: message.guild.id,
-      guildName: message.guild.name,
-      guildIcon: message.guild.iconURL() ? message.guild.iconURL() : "None.",
-      userId: user,
-      xp: 0,
-      level: 0,
-    });
-  }
-  xp.xp += amount;
+  let xp = await xpModel.findOneAndUpdate(
+    { guildId: message.guild.id, userId: user },
+    {
+      $inc: { xp: amount },
+      $setOnInsert: {
+        _id: new mongoose.Types.ObjectId(),
+        guildName: message.guild.name,
+        guildIcon: message.guild.iconURL() ? message.guild.iconURL() : "None.",
+        level: 0,
+      },
+    },
+    { upsert: true, new: true }
+  );
+
   let userLevel = xp.level;
   let userXP = xp.xp;
   let levelXP = userLevel * levelMultiplier;
